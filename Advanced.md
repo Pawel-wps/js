@@ -538,3 +538,103 @@ Node.js was first released on May 27, 2009.
     console.log(date); // { month: 'July', day: 4, year: 1961 }
 }                      // { month: 'May', day: 27, year: 2009 }
 ```
+
+## Modules
+
+- One `.js` file per module
+- Explicit `export`s and `import`s
+- Simple but effective
+
+### Named exports
+
+```js
+// trig.js
+
+export const PI = 3.141592653589793;
+const RADIANS_PER_DEGREE = PI / 180; // not exported
+
+export function radians(degrees) {
+    return degrees * RADIANS_PER_DEGREE;
+}
+
+export function degrees(radians) {
+    return radians / RADIANS_PER_DEGREE;
+}
+
+export function distance(x, y) {
+    return Math.sqrt(square(x) + square(y));
+}
+
+// not exported
+function square(x) {
+    return x * x;
+}
+```
+
+### Named imports
+
+```js
+// app.js
+
+import { PI, distance as distanceFromOrigin } from './trig';
+
+const distance = 1.5;
+
+console.log(PI);
+console.log(distanceFromOrigin(3, 4));
+```
+
+### Namespace import
+
+```js
+// app.js
+
+import * as trig from './trig';
+
+const distance = 1.5;
+
+console.log(trig.PI);
+console.log(trig.distance(3, 4));
+```
+
+### Browser support
+
+- Traditionally, all modules are bundled into a single `bundle.js` file
+  - by module bundlers like Webpack
+  - requires additional build step
+- These days, browsers support modules directly, but:
+  - ⚠️ Modules **must** be served by a (local) web server
+    - “double-click on `index.html`” will *not* work
+    - browse `http://localhost:8080` instead
+  - Any web server capable of serving files from the file system will do, for example:
+
+|                                | Node                         | Debian derivatives       |
+| ------------------------------ | ---------------------------- | ------------------------ |
+| install (once, from anywhere)  | `npm install -g http-server` | `sudo apt install webfs` |
+| serve (from project directory) | `http-server`                | `webfsd -F -p 8080`      |
+
+### HTML `script` tag
+
+- Execute all JavaScript code inside a module:
+
+```html
+<script type="module" src="filename.js">
+```
+
+- ⚠️ Exported module functions are invisible to HTML tag attributes:
+
+```html
+<button onclick="callback()">I have never met this callback in my life</button>
+```
+
+- Import and register the callback inside a module script instead:
+
+```html
+<button id="button">Of course I know him</button>
+
+<script type="module">
+import { callback } from "filename.js";
+
+document.getElementById("button").onclick = callback;
+</script>
+```
