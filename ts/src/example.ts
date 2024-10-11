@@ -1,6 +1,6 @@
 const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 
-const blockSize: number = 10;
+let blockSize: number = 20;
 
 type Block = Readonly<'I' | 'O' | 'T' | 'J' | 'L' | 'S' | 'Z'>
 
@@ -277,6 +277,13 @@ canvas.onkeydown = ({key}): void => {
             break;
         case ' ':
             board.rotate()
+            break;
+        case '+':
+            blockSize++
+            break;
+        case '-':
+            blockSize--
+            break;
     }
 }
 const O = makeTetromino(
@@ -359,6 +366,7 @@ function makeTetromino(shape: FieldValue[][]): Tetromino {
 
 board.add(L, 5, 0);
 
-setInterval(() => board.move('down'), 1000)
+let interval = setInterval(() => board.move('down'), 1000);
+
 setInterval(() => board.draw(canvas), 1000 / 30);
 
