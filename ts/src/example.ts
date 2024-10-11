@@ -42,12 +42,23 @@ class Board {
 
     move(direction: 'down' | 'left' | 'right') {
         console.log(`${this.tetrominoState.x},${this.tetrominoState.y}`);
-        if (!this.tetrominoState.tetromino || !this.canMove(direction)) {
+        if (!this.tetromino || !this.canMove(direction)) {
             return
         }
         const {x, y} = this.calculatePosition(direction);
         this.tetrominoState.x = x
         this.tetrominoState.y = y
+
+        if (this.hasReachedBottom) {
+            for (let i = 0; i < this.tetromino.width; i++) {
+                for (let j = 0; j < this.tetromino.height; j++) {
+                    if (this.tetromino.shape[j][i] === 'x') {
+                        this.state[j + this.tetrominoState.x][i + this.tetrominoState.y] = 'x'
+                    }
+                }
+            }
+            this.reset()
+        }
     }
 
     private calculatePosition(direction: "down" | "left" | "right"): { x: number, y: number } {
@@ -78,7 +89,7 @@ class Board {
 
         for (let i = 0; i < this.height; i++) {
             for (let j = 0; j < this.width; j++) {
-                if (this.state[i][j] === 'x') {
+                if (this.state[j][i] === 'x') {
                     this.drawBlock(context, j, i)
                 }
             }
@@ -123,7 +134,14 @@ class Board {
             (0 <= position.y && position.y + this.tetromino.height <= this.height);
     }
 
-    get tetromino() {
+    private get hasReachedBottom(): boolean {
+        if (!this.tetromino) {
+            return false
+        }
+        return this.tetrominoState.y + this.tetromino.height >= this.height
+    }
+
+    private get tetromino() {
         return this.tetrominoState.tetromino
     }
 
