@@ -42,24 +42,43 @@ class Board {
 
     move(direction: 'down' | 'left' | 'right') {
         console.log(`${this.tetrominoState.x},${this.tetrominoState.y}`);
-        if (!this.tetrominoState.tetromino) {
+        if (!this.tetrominoState.tetromino || !this.canMove(direction)) {
             return
         }
+        const {x, y} = this.calculatePosition(direction);
+        this.tetrominoState.x = x
+        this.tetrominoState.y = y
+    }
+
+    private calculatePosition(direction: "down" | "left" | "right"): { x: number, y: number } {
         switch (direction) {
-            case 'down': this.tetrominoState.y++; break
-            case 'left': this.tetrominoState.x--; break
-            case 'right': this.tetrominoState.x++; break
+            case 'down':
+                return {
+                    y: this.tetrominoState.y + 1,
+                    x: this.tetrominoState.x
+                }
+
+            case 'left':
+                return {
+                    y: this.tetrominoState.y,
+                    x: this.tetrominoState.x - 1
+                }
+            case 'right':
+                return {
+                    y: this.tetrominoState.y,
+                    x: this.tetrominoState.x + 1
+                }
         }
     }
 
-    draw(canvas: HTMLCanvasElement):void {
+    draw(canvas: HTMLCanvasElement): void {
         canvas.width = this.width * blockSize;
         canvas.height = this.height * blockSize;
-        const context = canvas.getContext("2d", { alpha: false })!;
+        const context = canvas.getContext("2d", {alpha: false})!;
 
         for (let i = 0; i < this.height; i++) {
             for (let j = 0; j < this.width; j++) {
-                if (this.state[i][j] === 'x'){
+                if (this.state[i][j] === 'x') {
                     this.drawBlock(context, j, i)
                 }
             }
@@ -69,7 +88,7 @@ class Board {
         if (tetromino) {
             for (let i = 0; i < tetromino.width; i++) {
                 for (let j = 0; j < tetromino.height; j++) {
-                    if (tetromino.shape[i][j] === 'x'){
+                    if (tetromino.shape[i][j] === 'x') {
                         this.drawBlock(context, j + this.tetrominoState.x, i + this.tetrominoState.y)
                     }
                 }
@@ -88,17 +107,29 @@ class Board {
         );
     }
 
-    add(tetronimo: Tetronimo, x: number, y: number) {
-        this.tetrominoState.tetromino = tetronimo;
+    add(tetromino: Tetromino, x: number, y: number) {
+        this.tetrominoState.tetromino = tetromino;
         this.tetrominoState.x = x;
         this.tetrominoState.y = y;
     }
-}
 
 
+    private canMove(direction: "down" | "left" | "right"): boolean {
+        if (!this.tetromino) {
+            return false;
+        }
+        const position = this.calculatePosition(direction)
+        return (0 <= position.x && position.x + this.tetromino.width <= this.width) &&
+            (0 <= position.y && position.y + this.tetromino.height <= this.height);
+    }
 
-class Tetronimo {
-    constructor(public width: number, public height: number, public shape: ('x' | 'o')[][]) {
+    get tetromino() {
+        return this.tetrominoState.tetromino
+    }
+
+    reset() {
+        this.tetrominoState.x = 5;
+        this.tetrominoState.y = 0;
     }
 }
 
@@ -106,20 +137,29 @@ const board = new Board();
 canvas.tabIndex = 0;
 canvas.focus();
 canvas.onkeydown = ({key}): void => {
+    console.log(key);
     switch (key) {
-        case 'ArrowDown': board.move('down'); break;
-        case 'ArrowLeft': board.move('left'); break;
-        case 'ArrowRight': board.move('right'); break;
+        case 'ArrowDown':
+            board.move('down');
+            break;
+        case 'ArrowLeft':
+            board.move('left');
+            break;
+        case 'ArrowRight':
+            board.move('right');
+            break;
+        case 'Escape':
+            board.reset()
     }
 }
-const square: Tetronimo = new Tetronimo(
-    2,
-    2,
-    [
+const square: Tetromino = {
+    width: 2,
+    height: 2,
+    shape: [
         ['x', 'x'],
-        ['x', 'x'],
-    ]
-)
+        ['x', 'x']
+    ],
+}
 
 
 board.add(square, 5, 0);
