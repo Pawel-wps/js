@@ -87,18 +87,22 @@ class Board {
             blockSize  // height
         );
     }
+
+    add(tetronimo: Tetronimo, x: number, y: number) {
+        this.tetrominoState.tetromino = tetronimo;
+        this.tetrominoState.x = x;
+        this.tetrominoState.y = y;
+    }
+}
+
+
+
+class Tetronimo {
+    constructor(public width: number, public height: number, public shape: ('x' | 'o')[][]) {
+    }
 }
 
 const board = new Board();
-
-board.tetrominoState.tetromino = {
-    width: 2,
-    height: 2,
-    shape: [
-        ['x','x'],
-        ['x','x']
-    ]
-}
 canvas.tabIndex = 0;
 canvas.focus();
 canvas.onkeydown = ({key}): void => {
@@ -108,6 +112,17 @@ canvas.onkeydown = ({key}): void => {
         case 'ArrowRight': board.move('right'); break;
     }
 }
+const square: Tetronimo = new Tetronimo(
+    2,
+    2,
+    [
+        ['x', 'x'],
+        ['x', 'x'],
+    ]
+)
+
+
+board.add(square, 5, 0);
 
 setInterval(() => board.draw(canvas), 1000 / 30);
 
