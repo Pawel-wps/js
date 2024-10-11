@@ -359,5 +359,6 @@ function makeTetromino(shape: FieldValue[][]): Tetromino {
 
 board.add(L, 5, 0);
 
+setInterval(() => board.move('down'), 1000)
 setInterval(() => board.draw(canvas), 1000 / 30);
 
