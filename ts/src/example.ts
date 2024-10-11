@@ -136,7 +136,7 @@ class Board {
     }
 
     private drawBlock(context: CanvasRenderingContext2D, x: number, y: number, block: Block) {
-        context.fillStyle = "#03c2ca";
+        context.fillStyle = blockColors[block];
         context.fillRect(
             x * blockSize, // x
             y * blockSize, // y
@@ -219,7 +219,7 @@ canvas.onkeydown = ({key}): void => {
     }
 }
 const O = makeTetromino(
- [
+    [
         ['O', 'O'],
         ['O', 'O']
     ],
@@ -232,6 +232,17 @@ const L = makeTetromino(
         ['L', 'L'],
     ],
 )
+
+const blockColors: {[key in Block]: string} = {
+    I: '#00F0F0',
+    O: `#F0F000`,
+    T: `#A000F0`,
+    S: `#00F000`,
+    Z: `#F00000`,
+    J: `#0000F0`,
+    L: `#F0A000`,
+    ' ': '#000000'
+}
 
 function makeTetromino(shape: Block[][]): Tetromino {
     return {
