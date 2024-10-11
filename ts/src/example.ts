@@ -14,6 +14,8 @@ type TetrominoState = {
     tetromino: Tetromino | null
 }
 
+type Direction = "down" | "left" | "right" | "up";
+
 class Board {
     readonly width: number = 10;
     readonly height: number = 20;
@@ -40,7 +42,7 @@ class Board {
         }
     }
 
-    move(direction: 'down' | 'left' | 'right') {
+    move(direction: Direction) {
         console.log(`${this.tetrominoState.x},${this.tetrominoState.y}`);
         if (!this.tetromino || !this.canMove(direction)) {
             return
@@ -61,23 +63,33 @@ class Board {
         }
     }
 
-    private calculatePosition(direction: "down" | "left" | "right"): { x: number, y: number } {
+    private calculatePosition(direction: Direction, tetrominoState: TetrominoState = this.tetrominoState): { x: number, y: number } {
         switch (direction) {
+            case "up": {
+                while (this.canMove('down', tetrominoState)) {
+                    let {x,y} = this.calculatePosition('down', tetrominoState);
+                    tetrominoState.x = x
+                    tetrominoState.y = y
+                }
+                return {
+                    y: tetrominoState.y,
+                    x: tetrominoState.x
+                }
+            }
             case 'down':
                 return {
-                    y: this.tetrominoState.y + 1,
-                    x: this.tetrominoState.x
+                    y: tetrominoState.y + 1,
+                    x: tetrominoState.x
                 }
-
             case 'left':
                 return {
-                    y: this.tetrominoState.y,
-                    x: this.tetrominoState.x - 1
+                    y: tetrominoState.y,
+                    x: tetrominoState.x - 1
                 }
             case 'right':
                 return {
-                    y: this.tetrominoState.y,
-                    x: this.tetrominoState.x + 1
+                    y: tetrominoState.y,
+                    x: tetrominoState.x + 1
                 }
         }
     }
@@ -125,13 +137,14 @@ class Board {
     }
 
 
-    private canMove(direction: "down" | "left" | "right"): boolean {
-        if (!this.tetromino) {
+    private canMove(direction: Direction, tetrominoState = this.tetrominoState): boolean {
+        const tetromino = tetrominoState.tetromino
+        if (!tetromino) {
             return false;
         }
-        const position = this.calculatePosition(direction)
-        return (0 <= position.x && position.x + this.tetromino.width <= this.width) && // x
-            (0 <= position.y && position.y + this.tetromino.height <= this.height) && // y
+        const position = this.calculatePosition(direction, tetrominoState)
+        return (0 <= position.x && position.x + tetromino.width <= this.width) && // x
+            (0 <= position.y && position.y + tetromino.height <= this.height) && // y
             !this.hasCollision(position);
     }
 
@@ -181,6 +194,9 @@ canvas.onkeydown = ({key}): void => {
             break;
         case 'ArrowRight':
             board.move('right');
+            break;
+        case 'ArrowUp':
+            board.move('up');
             break;
         case 'Escape':
             board.reset()
