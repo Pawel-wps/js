@@ -2,12 +2,14 @@ const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 
 const blockSize: number = 10;
 
-type Block = Readonly<' ' | 'I' | 'O' | 'T' | 'J' | 'L' | 'S' | 'Z'>
+type Block = Readonly<'I' | 'O' | 'T' | 'J' | 'L' | 'S' | 'Z'>
+
+type FieldValue = Block | ' '
 
 type Tetromino = {
     width: number,
     height: number
-    shape: Block[][]
+    shape: FieldValue[][]
 }
 
 type TetrominoState = {
@@ -22,7 +24,9 @@ class Board {
     readonly width: number = 10;
     readonly height: number = 20;
 
-    readonly state: Block[][] = [];
+    readonly state: FieldValue[][] = [];
+
+    generator = new TetrominoGenerator()
 
     readonly tetrominoState: TetrominoState = {
         x: 0,
@@ -60,7 +64,7 @@ class Board {
                     this.state[x + this.tetrominoState.x][y + this.tetrominoState.y] = block
                 }
             )
-            this.reset()
+            this.spawnNextTetromino()
         }
     }
 
@@ -190,9 +194,33 @@ class Board {
         return this.tetrominoState.tetromino
     }
 
-    reset() {
+    spawnNextTetromino() {
+        this.tetrominoState.tetromino = this.generator.next()
         this.tetrominoState.x = 5;
         this.tetrominoState.y = 0;
+    }
+
+    reset() {
+        this.initializeBoard()
+        this.generator = new TetrominoGenerator()
+        this.spawnNextTetromino()
+    }
+}
+
+class TetrominoGenerator {
+    private unused: Tetromino[] = []
+
+    next(): Tetromino {
+        if (this.unused.length === 0) {
+            this.unused = Object.values(tetrominos)
+        }
+        let next = this.chooseAtRandom(this.unused);
+        this.unused = this.unused.filter(it => it !== next)
+        return next
+    }
+
+    private chooseAtRandom(tetrominos: Tetromino[]): Tetromino {
+        return tetrominos[Math.floor(Math.random() * tetrominos.length)]
     }
 }
 
@@ -233,6 +261,41 @@ const L = makeTetromino(
     ],
 )
 
+const J = makeTetromino(
+    [
+        [' ', 'J'],
+        [' ', 'J'],
+        ['J', 'J'],
+    ],
+)
+
+const I = makeTetromino(
+    [
+        ['I', 'I', 'I', 'I'],
+    ],
+)
+
+const T = makeTetromino(
+    [
+        ['T', 'T', 'T'],
+        [' ', 'T', ' '],
+    ],
+)
+
+const S = makeTetromino(
+    [
+        [' ', 'S', 'S'],
+        ['S', 'S', ' '],
+    ],
+)
+
+const Z = makeTetromino(
+    [
+        ['Z', 'Z', ' '],
+        [' ', 'Z', 'Z'],
+    ],
+)
+
 const blockColors: {[key in Block]: string} = {
     I: '#00F0F0',
     O: `#F0F000`,
@@ -241,10 +304,19 @@ const blockColors: {[key in Block]: string} = {
     Z: `#F00000`,
     J: `#0000F0`,
     L: `#F0A000`,
-    ' ': '#000000'
 }
 
-function makeTetromino(shape: Block[][]): Tetromino {
+const tetrominos: {[key in Block]: Tetromino} = {
+    I,
+    O,
+    T,
+    S,
+    Z,
+    J,
+    L,
+}
+
+function makeTetromino(shape: FieldValue[][]): Tetromino {
     return {
         width: shape[0].length,
         height: shape.length,
