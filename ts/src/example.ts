@@ -214,17 +214,30 @@ canvas.onkeydown = ({key}): void => {
             board.reset()
     }
 }
-const square: Tetromino = {
-    width: 2,
-    height: 2,
-    shape: [
+const O = makeTetromino(
+ [
         ['x', 'x'],
         ['x', 'x']
     ],
+)
+
+const L = makeTetromino(
+    [
+        ['x', 'o'],
+        ['x', 'o'],
+        ['x', 'x'],
+    ],
+)
+
+function makeTetromino(shape: ('x' | 'o')[][]): Tetromino {
+    return {
+        width: shape[0].length,
+        height: shape.length,
+        shape
+    }
 }
 
-
-board.add(square, 5, 0);
+board.add(L, 5, 0);
 
 setInterval(() => board.draw(canvas), 1000 / 30);
 
