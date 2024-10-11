@@ -55,7 +55,7 @@ class Board {
             this.process(
                 this.tetromino,
                 (x, y) => {
-                    this.state[y + this.tetrominoState.x][x + this.tetrominoState.y] = 'x'
+                    this.state[x + this.tetrominoState.x][y + this.tetrominoState.y] = 'x'
                 }
             )
             this.reset()
