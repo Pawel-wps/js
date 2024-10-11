@@ -48,6 +48,22 @@ class Board {
         }
     }
 
+    rotate() {
+        if (!this.tetromino) {
+            return
+        }
+        const shape = this.tetromino.shape
+        const newTetromino = makeTetromino(
+            rotateArray(shape)
+        )
+        if (!this.hasCollision({
+            x: this.tetrominoState.x,
+            y: this.tetrominoState.y
+        }, newTetromino)) {
+            this.tetrominoState.tetromino = newTetromino;
+        }
+    }
+
     move(direction: Direction) {
         console.log(`${this.tetrominoState.x},${this.tetrominoState.y}`);
         if (!this.tetromino || !this.canMove(direction)) {
@@ -167,14 +183,14 @@ class Board {
             !this.hasCollision(position);
     }
 
-    hasCollision(newPosition: { x: number; y: number; }): boolean {
-        if (!this.tetromino) {
+    hasCollision(newPosition: { x: number; y: number; }, tetromino = this.tetromino ): boolean {
+        if (!tetromino) {
             return false
         }
 
         let isBlocked = false
         this.process(
-            this.tetromino,
+            tetromino,
             (x, y) => {
                 isBlocked = isBlocked || this.state[newPosition.x + x][newPosition.y + y] !== ' '
             }
@@ -206,6 +222,20 @@ class Board {
         this.spawnNextTetromino()
     }
 }
+
+function rotateArray(matrix: any[][]): any[] {
+    let newMatrix:any[][] = [];
+
+    for (let j = 0; j < matrix[0].length; j++){
+        newMatrix.push([]);
+        for (let i = matrix.length-1; i >-1; i--){
+            newMatrix[j].push(matrix[i][j]);
+        }
+    }
+    return newMatrix;
+}
+
+
 
 class TetrominoGenerator {
     private unused: Tetromino[] = []
@@ -244,6 +274,9 @@ canvas.onkeydown = ({key}): void => {
             break;
         case 'Escape':
             board.reset()
+            break;
+        case ' ':
+            board.rotate()
     }
 }
 const O = makeTetromino(
