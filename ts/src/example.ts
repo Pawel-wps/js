@@ -2,10 +2,12 @@ const canvas = document.getElementById("canvas") as HTMLCanvasElement;
 
 const blockSize: number = 10;
 
+type Block = Readonly<' ' | 'I' | 'O' | 'T' | 'J' | 'L' | 'S' | 'Z'>
+
 type Tetromino = {
     width: number,
     height: number
-    shape: ('o' | 'x')[][]
+    shape: Block[][]
 }
 
 type TetrominoState = {
@@ -20,7 +22,7 @@ class Board {
     readonly width: number = 10;
     readonly height: number = 20;
 
-    readonly state: ('x' | 'o')[][] = [];
+    readonly state: Block[][] = [];
 
     readonly tetrominoState: TetrominoState = {
         x: 0,
@@ -54,19 +56,20 @@ class Board {
         if (this.hasReachedBottom) {
             this.process(
                 this.tetromino,
-                (x, y) => {
-                    this.state[x + this.tetrominoState.x][y + this.tetrominoState.y] = 'x'
+                (x, y, block) => {
+                    this.state[x + this.tetrominoState.x][y + this.tetrominoState.y] = block
                 }
             )
             this.reset()
         }
     }
 
-    private process(tetromino: Tetromino, action: (x: number, y: number) => any) {
+    private process(tetromino: Tetromino, action: (x: number, y: number, block: Block) => any) {
         for (let i = 0; i < tetromino.width; i++) {
             for (let j = 0; j < tetromino.height; j++) {
-                if (tetromino.shape[j][i] === 'x') {
-                    action(i, j)
+                let block = tetromino.shape[j][i];
+                if (block !== ' ') {
+                    action(i, j, block)
                 }
             }
         }
@@ -113,8 +116,9 @@ class Board {
 
         for (let i = 0; i < this.height; i++) {
             for (let j = 0; j < this.width; j++) {
-                if (this.state[j][i] === 'x') {
-                    this.drawBlock(context, j, i)
+                const block = this.state[j][i];
+                if (block !== ' ') {
+                    this.drawBlock(context, j, i, block)
                 }
             }
         }
@@ -123,15 +127,15 @@ class Board {
         if (tetromino) {
             this.process(
                 tetromino,
-                (x, y) => {
-                    this.drawBlock(context, x + this.tetrominoState.x, y + this.tetrominoState.y)
+                (x, y, block) => {
+                    this.drawBlock(context, x + this.tetrominoState.x, y + this.tetrominoState.y, block)
                 }
             )
         }
 
     }
 
-    private drawBlock(context: CanvasRenderingContext2D, x: number, y: number) {
+    private drawBlock(context: CanvasRenderingContext2D, x: number, y: number, block: Block) {
         context.fillStyle = "#03c2ca";
         context.fillRect(
             x * blockSize, // x
@@ -168,7 +172,7 @@ class Board {
         this.process(
             this.tetromino,
             (x, y) => {
-                isBlocked = isBlocked || this.state[newPosition.x + x][newPosition.y + y] === 'x'
+                isBlocked = isBlocked || this.state[newPosition.x + x][newPosition.y + y] !== ' '
             }
         )
         return isBlocked;
@@ -216,20 +220,20 @@ canvas.onkeydown = ({key}): void => {
 }
 const O = makeTetromino(
  [
-        ['x', 'x'],
-        ['x', 'x']
+        ['O', 'O'],
+        ['O', 'O']
     ],
 )
 
 const L = makeTetromino(
     [
-        ['x', 'o'],
-        ['x', 'o'],
-        ['x', 'x'],
+        ['L', ' '],
+        ['L', ' '],
+        ['L', 'L'],
     ],
 )
 
-function makeTetromino(shape: ('x' | 'o')[][]): Tetromino {
+function makeTetromino(shape: Block[][]): Tetromino {
     return {
         width: shape[0].length,
         height: shape.length,
