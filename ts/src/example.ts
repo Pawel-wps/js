@@ -52,22 +52,34 @@ class Board {
         this.tetrominoState.y = y
 
         if (this.hasReachedBottom) {
-            for (let i = 0; i < this.tetromino.width; i++) {
-                for (let j = 0; j < this.tetromino.height; j++) {
-                    if (this.tetromino.shape[j][i] === 'x') {
-                        this.state[j + this.tetrominoState.x][i + this.tetrominoState.y] = 'x'
-                    }
+            this.process(
+                this.tetromino,
+                (x, y) => {
+                    this.state[y + this.tetrominoState.x][x + this.tetrominoState.y] = 'x'
                 }
-            }
+            )
             this.reset()
         }
     }
 
-    private calculatePosition(direction: Direction, tetrominoState: TetrominoState = this.tetrominoState): { x: number, y: number } {
+    private process(tetromino: Tetromino, action: (x: number, y: number) => any) {
+        for (let i = 0; i < tetromino.width; i++) {
+            for (let j = 0; j < tetromino.height; j++) {
+                if (tetromino.shape[j][i] === 'x') {
+                    action(i, j)
+                }
+            }
+        }
+    }
+
+    private calculatePosition(direction: Direction, tetrominoState: TetrominoState = this.tetrominoState): {
+        x: number,
+        y: number
+    } {
         switch (direction) {
             case "up": {
                 while (this.canMove('down', tetrominoState)) {
-                    let {x,y} = this.calculatePosition('down', tetrominoState);
+                    let {x, y} = this.calculatePosition('down', tetrominoState);
                     tetrominoState.x = x
                     tetrominoState.y = y
                 }
@@ -109,13 +121,12 @@ class Board {
 
         let tetromino = this.tetrominoState.tetromino;
         if (tetromino) {
-            for (let i = 0; i < tetromino.width; i++) {
-                for (let j = 0; j < tetromino.height; j++) {
-                    if (tetromino.shape[i][j] === 'x') {
-                        this.drawBlock(context, j + this.tetrominoState.x, i + this.tetrominoState.y)
-                    }
+            this.process(
+                tetromino,
+                (x, y) => {
+                    this.drawBlock(context, x + this.tetrominoState.x, y + this.tetrominoState.y)
                 }
-            }
+            )
         }
 
     }
@@ -152,14 +163,15 @@ class Board {
         if (!this.tetromino) {
             return false
         }
-        for (let i = 0; i < this.tetromino.width; i++) {
-            for (let j = 0; j < this.tetromino.height; j++) {
-                if (this.tetromino.shape[i][j] === 'x' && this.state[newPosition.x + j][newPosition.y + i] === 'x') {
-                    return true;
-                }
+
+        let isBlocked = false
+        this.process(
+            this.tetromino,
+            (x, y) => {
+                isBlocked = isBlocked || this.state[newPosition.x + x][newPosition.y + y] === 'x'
             }
-        }
-        return false;
+        )
+        return isBlocked;
     }
 
     private get hasReachedBottom(): boolean {
