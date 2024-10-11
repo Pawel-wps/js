@@ -1,8 +1,12 @@
 {
+  "scripts": {
+    "start": "concurrently --names \"SERVER,TS\" --prefix-colors \"yellow,blue\" --kill-others \"http-server\" \"npx tsc --watch\""
+  },
   "devDependencies": {
     "typescript": "latest"
   },
   "dependencies": {
+    "concurrently": "^9.0.1",
     "http-server": "^14.1.1"
   }
 }
