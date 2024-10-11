@@ -34,10 +34,10 @@ class Board {
 
 
     private initializeBoard(): void {
-        for (let i = 0; i < this.height; i++) {
+        for (let i = 0; i < this.width; i++) {
             this.state[i] = [];
-            for (let j = 0; j < this.width; j++) {
-                this.state[i][j] = 'o';
+            for (let j = 0; j < this.height; j++) {
+                this.state[i][j] = ' ';
             }
         }
     }
