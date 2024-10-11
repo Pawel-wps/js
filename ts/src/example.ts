@@ -130,15 +130,31 @@ class Board {
             return false;
         }
         const position = this.calculatePosition(direction)
-        return (0 <= position.x && position.x + this.tetromino.width <= this.width) &&
-            (0 <= position.y && position.y + this.tetromino.height <= this.height);
+        return (0 <= position.x && position.x + this.tetromino.width <= this.width) && // x
+            (0 <= position.y && position.y + this.tetromino.height <= this.height) && // y
+            !this.hasCollision(position);
+    }
+
+    hasCollision(newPosition: { x: number; y: number; }): boolean {
+        if (!this.tetromino) {
+            return false
+        }
+        for (let i = 0; i < this.tetromino.width; i++) {
+            for (let j = 0; j < this.tetromino.height; j++) {
+                if (this.tetromino.shape[i][j] === 'x' && this.state[newPosition.x + j][newPosition.y + i] === 'x') {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 
     private get hasReachedBottom(): boolean {
         if (!this.tetromino) {
             return false
         }
-        return this.tetrominoState.y + this.tetromino.height >= this.height
+        return !this.canMove('down')
+
     }
 
     private get tetromino() {
