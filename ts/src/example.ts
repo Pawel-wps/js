@@ -242,7 +242,7 @@ class TetrominoGenerator {
 
     next(): Tetromino {
         if (this.unused.length === 0) {
-            this.unused = Object.values(tetrominos)
+            this.unused = tetrominos
         }
         let next = this.chooseAtRandom(this.unused);
         this.unused = this.unused.filter(it => it !== next)
@@ -346,7 +346,7 @@ const blockColors: {[key in Block]: string} = {
     L: `#F0A000`,
 }
 
-const tetrominos: {[key in Block]: Tetromino} = {
+const tetrominos = [
     I,
     O,
     T,
@@ -354,7 +354,7 @@ const tetrominos: {[key in Block]: Tetromino} = {
     Z,
     J,
     L,
-}
+]
 
 function makeTetromino(shape: FieldValue[][]): Tetromino {
     return {
