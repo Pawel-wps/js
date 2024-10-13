@@ -13,12 +13,13 @@ type Tetromino = {
 }
 
 type TetrominoState = {
-    x: number
-    y: number
+    position: Position
     tetromino: Tetromino | null
 }
 
 type Direction = "down" | "left" | "right" | "up";
+
+type Position = { x: number, y: number }
 
 class Board {
     readonly width: number = 10;
@@ -28,16 +29,13 @@ class Board {
 
     generator = new TetrominoGenerator()
 
-    readonly tetrominoState: TetrominoState = {
-        x: 0,
-        y: 0,
-        tetromino: null
-    }
+    position: Position = {x: 0, y: 0}
+
+    tetromino: Tetromino | null = null
 
     constructor() {
         this.initializeBoard();
     }
-
 
     private initializeBoard(): void {
         for (let i = 0; i < this.width; i++) {
@@ -57,27 +55,25 @@ class Board {
             rotateArray(shape)
         )
         if (!this.hasCollision({
-            x: this.tetrominoState.x,
-            y: this.tetrominoState.y
+            x: this.position.x,
+            y: this.position.y
         }, newTetromino)) {
-            this.tetrominoState.tetromino = newTetromino;
+            this.tetromino = newTetromino;
         }
     }
 
     move(direction: Direction) {
-        console.log(`${this.tetrominoState.x},${this.tetrominoState.y}`);
+        console.log(`${this.position}`);
         if (!this.tetromino || !this.canMove(direction)) {
             return
         }
-        const {x, y} = this.calculatePosition(direction);
-        this.tetrominoState.x = x
-        this.tetrominoState.y = y
+        this.position = this.calculatePosition(direction);
 
         if (this.hasReachedBottom) {
             this.process(
                 this.tetromino,
                 (x, y, block) => {
-                    this.state[x + this.tetrominoState.x][y + this.tetrominoState.y] = block
+                    this.state[x + this.position.x][y + this.position.y] = block
                 }
             )
             this.spawnNextTetromino()
@@ -95,36 +91,33 @@ class Board {
         }
     }
 
-    private calculatePosition(direction: Direction, tetrominoState: TetrominoState = this.tetrominoState): {
-        x: number,
-        y: number
-    } {
+    private calculatePosition(direction: Direction, tetrominoState: TetrominoState = this.tetrominoState): Position {
         switch (direction) {
-            case "up": {
+            case "up": { // HardDrop
                 while (this.canMove('down', tetrominoState)) {
                     let {x, y} = this.calculatePosition('down', tetrominoState);
-                    tetrominoState.x = x
-                    tetrominoState.y = y
+                    tetrominoState.position.x = x
+                    tetrominoState.position.y = y
                 }
                 return {
-                    y: tetrominoState.y,
-                    x: tetrominoState.x
+                    y: tetrominoState.position.y,
+                    x: tetrominoState.position.x
                 }
             }
             case 'down':
                 return {
-                    y: tetrominoState.y + 1,
-                    x: tetrominoState.x
+                    y: tetrominoState.position.y + 1,
+                    x: tetrominoState.position.x
                 }
             case 'left':
                 return {
-                    y: tetrominoState.y,
-                    x: tetrominoState.x - 1
+                    y: tetrominoState.position.y,
+                    x: tetrominoState.position.x - 1
                 }
             case 'right':
                 return {
-                    y: tetrominoState.y,
-                    x: tetrominoState.x + 1
+                    y: tetrominoState.position.y,
+                    x: tetrominoState.position.x + 1
                 }
         }
     }
@@ -148,7 +141,7 @@ class Board {
             this.process(
                 tetromino,
                 (x, y, block) => {
-                    this.drawBlock(context, x + this.tetrominoState.x, y + this.tetrominoState.y, block)
+                    this.drawBlock(context, x + this.position.x, y + this.position.y, block)
                 }
             )
         }
@@ -165,13 +158,6 @@ class Board {
         );
     }
 
-    add(tetromino: Tetromino, x: number, y: number) {
-        this.tetrominoState.tetromino = tetromino;
-        this.tetrominoState.x = x;
-        this.tetrominoState.y = y;
-    }
-
-
     private canMove(direction: Direction, tetrominoState = this.tetrominoState): boolean {
         const tetromino = tetrominoState.tetromino
         if (!tetromino) {
@@ -183,7 +169,7 @@ class Board {
             !this.hasCollision(position);
     }
 
-    hasCollision(newPosition: { x: number; y: number; }, tetromino = this.tetromino ): boolean {
+    hasCollision(newPosition: { x: number; y: number; }, tetromino = this.tetromino): boolean {
         if (!tetromino) {
             return false
         }
@@ -206,14 +192,16 @@ class Board {
 
     }
 
-    private get tetromino() {
-        return this.tetrominoState.tetromino
+    get tetrominoState(): TetrominoState {
+        return {
+            position: this.position,
+            tetromino: this.tetromino,
+        }
     }
 
     spawnNextTetromino() {
-        this.tetrominoState.tetromino = this.generator.next()
-        this.tetrominoState.x = 5;
-        this.tetrominoState.y = 0;
+        this.tetromino = this.generator.next()
+        this.position = {x: 5, y: 0}
     }
 
     reset() {
@@ -224,17 +212,16 @@ class Board {
 }
 
 function rotateArray(matrix: any[][]): any[] {
-    let newMatrix:any[][] = [];
+    let newMatrix: any[][] = [];
 
-    for (let j = 0; j < matrix[0].length; j++){
+    for (let j = 0; j < matrix[0].length; j++) {
         newMatrix.push([]);
-        for (let i = matrix.length-1; i >-1; i--){
+        for (let i = matrix.length - 1; i > -1; i--) {
             newMatrix[j].push(matrix[i][j]);
         }
     }
     return newMatrix;
 }
-
 
 
 class TetrominoGenerator {
@@ -336,7 +323,7 @@ const Z = makeTetromino(
     ],
 )
 
-const blockColors: {[key in Block]: string} = {
+const blockColors: { [key in Block]: string } = {
     I: '#00F0F0',
     O: `#F0F000`,
     T: `#A000F0`,
@@ -364,7 +351,7 @@ function makeTetromino(shape: FieldValue[][]): Tetromino {
     }
 }
 
-board.add(L, 5, 0);
+board.spawnNextTetromino();
 
 let interval = setInterval(() => board.move('down'), 1000);
 
